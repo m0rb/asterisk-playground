@@ -1,0 +1,53 @@
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+
+use Asterisk::AGI;
+use File::Basename;
+use LWP::UserAgent;
+
+my $AGI = new Asterisk::AGI;
+my $ua  = LWP::UserAgent->new;
+
+my $apihost = "esp8266.localdomain:8080";
+my $url     = "http://$apihost";
+
+$| = 1;
+
+$AGI->answer();
+while (1) {
+  my $dtmf = $AGI->wait_for_digit(5000);
+  my ( $ret, $num );
+  if ( $dtmf == 35 ) {
+    $ret = $ua->get( $url . "/start" );
+  }
+  elsif ( $dtmf == 36 ) {
+    $ret = $ua->get( $url . "/coin" );
+  }
+  elsif ( $dtmf == 42 ) {
+    $ret = $ua->get( $url . "/start" );
+  }
+  elsif ( $dtmf > 42 ) {
+    $num = ( $dtmf - 48 );
+    if ( $num == 0 ) {
+      $ret = $ua->get( $url . "/down" );
+    }
+    if ( $num == 2 ) {
+      $ret = $ua->get( $url . "/up" );
+    }
+    if ( $num == 4 ) {
+      $ret = $ua->get( $url . "/left" );
+    }
+    if ( $num == 5 ) {
+      $ret = $ua->get( $url . "/start" );
+    }
+    if ( $num == 6 ) {
+      $ret = $ua->get( $url . "/right" );
+    }
+    if ( $num == 8 ) {
+      $ret = $ua->get( $url . "/down" );
+    }
+  }
+}
+$AGI->hangup;
+
